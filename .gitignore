@@ -66,3 +66,8 @@ dist
 
 # user's personal customized settings
 game/Customize
+.zcode/
+tools/stratz_token.local
+tools/d2vpkr_cache/
+__pycache__/
+*.pyc

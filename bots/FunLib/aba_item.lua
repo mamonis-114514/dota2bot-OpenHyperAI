@@ -446,7 +446,6 @@ Item['sSellList'] = {
 	"item_pavise",
 
 	"item_boots_of_bearing",
-	"item_drum_of_endurance",
 
 	"item_spirit_vessel",
 	"item_urn_of_shadows",

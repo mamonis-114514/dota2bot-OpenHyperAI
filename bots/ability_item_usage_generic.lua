@@ -9,6 +9,9 @@ local bDebugMode = ( 10 == 10 )
 
 local J = require( GetScriptDirectory()..'/FunLib/jmz_func' )
 local Utils = require( GetScriptDirectory()..'/FunLib/utils' )
+local HumanSP = require( GetScriptDirectory()..'/FunLib/human_lib' )
+local LaningSP = require( GetScriptDirectory()..'/FunLib/laning_lib' )
+local GankSP = require( GetScriptDirectory()..'/FunLib/gank_lib' )
 local BotBuild = dofile( GetScriptDirectory().."/BotLib/"..string.gsub( botName, "npc_dota_", "" ) )
 local Localization = require( GetScriptDirectory()..'/FunLib/localization' )
 local Customize = require(GetScriptDirectory()..'/Customize/general')
@@ -45,7 +48,16 @@ local function ReloadBotBuild(reason)
 			-- so entries at the front of the new list may reference abilities that
 			-- are already at max level or can't be upgraded further.
 			local botLevel = bot:GetLevel()
-			local nPointsSpent = botLevel - bot:GetAbilityPoints()
+			-- Count spent points from ability slot levels instead of
+			-- (heroLevel - abilityPoints): heroes that earn bonus points
+			-- (Invoker at 6/12/18 since 7.41b) break that subtraction.
+			local nPointsSpent = 0
+			for slot = 0, 23 do
+				local hAbility = bot:GetAbilityInSlot(slot)
+				if hAbility ~= nil and not hAbility:IsHidden() and hAbility:GetName() ~= 'generic_hidden' then
+					nPointsSpent = nPointsSpent + hAbility:GetLevel()
+				end
+			end
 			-- Remove the first N entries where N = ability points already spent
 			-- This aligns the list with the bot's current level progression
 			local trimmed = {}
@@ -537,6 +549,16 @@ local function BuybackUsageComplement()
 	if J.IsMeepoClone(bot) then return end
 
 	X.SetTalkMessage()
+
+	-- SmartPlay: chat-channel duties (miss calls / missing-enemy warnings).
+	-- Pure chat, no orders, so it is safe to run for every bot regardless of
+	-- which mode owns this frame's movement.
+	if bot:IsAlive() then
+		pcall( function()
+			LaningSP.UpdateMissCall( bot, bot:GetNearbyHeroes( 1600, true, BOT_MODE_NONE ), bot:GetAssignedLane() )
+		end )
+		pcall( function() GankSP.UpdateWarnings( bot ) end )
+	end
 
 	if bot:GetLevel() <= 15
 		or bot:HasModifier( 'modifier_arc_warden_tempest_double' )
@@ -5052,6 +5074,15 @@ X.ConsiderItemDesire["item_tpscroll"] = function( hItem )
 	local nNearbyEnemyTowers = bot:GetNearbyTowers( 888, true )
 	if #nNearbyEnemyTowers > 0 then return BOT_ACTION_DESIRE_NONE end
 
+	-- SmartPlay: TP counter-dive - allies are being dived at our tower
+	if not bot.healInBase then
+		local spDive = GankSP.GetTowerDive( bot )
+		if spDive ~= nil and GetUnitToLocationDistance( bot, spDive.loc ) > 2500 then
+			GankSP.AnnounceDive( bot, spDive )
+			return BOT_ACTION_DESIRE_ABSOLUTE, spDive.loc, 'ground', 'TP counter-dive'
+		end
+	end
+
 	local tpLoc = nil
 	local sCastType = 'ground'
 	local hEffectTarget = nil
@@ -6961,6 +6992,13 @@ X.ConsiderItemDesire['item_smoke_of_deceit'] = function(item)
 		local nMode = bot:GetActiveMode()
 		local timeOfDay = J.CheckTimeOfDay()
 		hEffectTarget = bot
+
+		-- SmartPlay: planned smoke gank (time-anchored team plan)
+		local spPlan = GankSP.GetActiveSmokePlan( bot )
+		if spPlan ~= nil and #nInRangeAlly >= 2 then
+			GankSP.AnnounceSmokePlan( bot, spPlan )
+			return BOT_ACTION_DESIRE_ABSOLUTE, hEffectTarget, sCastType, 'SmartPlay smoke gank'
+		end
 
 		if #nInRangeAlly >= 2
 		and (nMode == BOT_MODE_ROAM

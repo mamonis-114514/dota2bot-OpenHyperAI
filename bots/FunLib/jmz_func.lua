@@ -3343,11 +3343,65 @@ end
 
 function J.GetDefendLaneDesire(lane)
 	local defaultDefDesire, newDefDesire = GetDefendLaneDesire(lane), GetBot().DefendLaneDesire
+	local desire = defaultDefDesire
 	if newDefDesire ~= nil and newDefDesire[lane] > defaultDefDesire
 	then
-		return newDefDesire[lane]
+		desire = newDefDesire[lane]
 	end
-	return defaultDefDesire
+	-- SmartPlay: unwinnable-defense trade layer (decision only, no stats)
+	return J.SmartPlayAdjustDefend(lane, desire)
+end
+
+-- ===== SmartPlay (see FunLib/human_lib.lua and docs in CHANGELOG.md) =====
+J.Human = require( GetScriptDirectory()..'/FunLib/human_lib' )
+
+-- Cap the defend desire when a lane is being overrun by a force we cannot
+-- contest, so bots trade objectives instead of trickling to their deaths.
+-- Deterministic per shared state; hysteresis keeps the decision stable 8s.
+function J.SmartPlayAdjustDefend(lane, desire)
+	local bot = GetBot()
+	if not J.Human.Enabled('Team_Coordination') then return desire end
+	if desire < 0.55 or bot == nil or not bot:IsAlive() then return desire end
+	-- never trade away a base defense
+	if J.GetEnemiesAroundAncient(bot, 3200) > 0 then return desire end
+
+	local now = DotaTime()
+	if bot.spTradeCheck == nil or now - bot.spTradeCheck > 5 then
+		bot.spTradeCheck = now
+		local laneFront = GetLaneFrontLocation(GetTeam(), lane, 0)
+		local enemies = J.GetEnemiesNearLoc(laneFront, 1600)
+		local allies = J.GetAlliesNearLoc(laneFront, 1600)
+		local nEnemies = (enemies ~= nil and #enemies) or 0
+		local nAllies = (allies ~= nil and #allies) or 0
+		if nEnemies >= 4 and nAllies <= 2 then
+			bot.spTradeUntil = now + 8
+			-- one deterministic sender announces the trade
+			if bot.spTradeAnnounceTime == nil or now - bot.spTradeAnnounceTime > 45 then
+				local myID = bot:GetPlayerID()
+				local lowest = myID
+				for _, id in pairs(GetTeamPlayers(GetTeam())) do
+					local member = GetTeamMember(id)
+					if member ~= nil and member:IsAlive() and member:IsBot()
+					and member:GetPlayerID() < lowest then
+						lowest = member:GetPlayerID()
+					end
+				end
+				if lowest == myID then
+					bot.spTradeAnnounceTime = now
+					local Localization = require(GetScriptDirectory()..'/FunLib/localization')
+					local msgs = Localization.Get('say_trade_objectives')
+					if msgs ~= nil and #msgs > 0 then
+						bot:ActionImmediate_Chat(msgs[RandomInt(1, #msgs)], false)
+					end
+				end
+			end
+		end
+	end
+
+	if bot.spTradeUntil ~= nil and now < bot.spTradeUntil then
+		return math.min(desire, 0.45)
+	end
+	return desire
 end
 
 function J.IsT3TowerDown(team, lane)

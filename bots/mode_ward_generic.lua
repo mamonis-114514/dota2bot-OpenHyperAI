@@ -8,6 +8,8 @@ local bot = GetBot()
 local J = require(GetScriptDirectory()..'/FunLib/jmz_func')
 local W = require(GetScriptDirectory() ..'/FunLib/aba_ward_utility')
 local Customize = require(GetScriptDirectory()..'/Customize/general')
+local HumanLibWard = require(GetScriptDirectory()..'/FunLib/human_lib')
+local GankWard = require(GetScriptDirectory()..'/FunLib/gank_lib')
 Customize.ThinkLess = Customize.Enable and Customize.ThinkLess or 1
 
 local nObserverWardCastRange = 500
@@ -25,6 +27,11 @@ function GetDesire()
 	-- local cachedVar = J.Utils.GetCachedVars(cacheKey, 0.6 * (1 + Customize.ThinkLess))
 	-- if DotaTime() > 30 and cachedVar ~= nil then return cachedVar end
 	local res = GetDesireHelper()
+	-- SmartPlay: when we are ahead on towers, keep vision pressure up
+	-- (more warding so the push can be supported and ganks preempted)
+	if HumanLibWard.Enabled('Team_Coordination') and GankWard.TowerCountAdvantage() >= 2 then
+		res = math.max(res, 0.5)
+	end
 	-- J.Utils.SetCachedVars(cacheKey, res)
 	return RemapValClamped(J.GetHP(bot) * res, 0, 1, BOT_MODE_DESIRE_NONE, res)
 end

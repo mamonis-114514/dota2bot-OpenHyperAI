@@ -44,6 +44,22 @@ if sPurchaseList == nil then
 	return
 end
 
+-- SmartPlay: draft-adaptive item adjustments (runs once at load, max 3 changes)
+local Human = require( GetScriptDirectory()..'/FunLib/human_lib' )
+if Human.Enabled('Draft_Adaptive_Items') then
+	local Draft = require( GetScriptDirectory()..'/FunLib/draft_lib' )
+	local pos = J.GetPosition(bot)
+	local ok, adjusted, changes = pcall(Draft.AdjustBuyList, bot, sPurchaseList, pos)
+	if ok and adjusted ~= nil then
+		sPurchaseList = adjusted
+		if changes ~= nil and #changes > 0 then
+			print("[DraftAdapt] "..botName.." (pos"..pos.."): "..table.concat(changes, "; "))
+		end
+	else
+		print("[DraftAdapt] failed for "..botName..": "..tostring(adjusted))
+	end
+end
+
 for i = 1, #sPurchaseList
  do
 	bot.purchaseListInReverseOrder[i] = sPurchaseList[#sPurchaseList - i + 1]

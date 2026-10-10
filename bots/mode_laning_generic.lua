@@ -1,5 +1,7 @@
 local Utils = require( GetScriptDirectory()..'/FunLib/utils')
 local J = require( GetScriptDirectory()..'/FunLib/jmz_func')
+local HumanLib = require( GetScriptDirectory()..'/FunLib/human_lib')
+local Laning = require( GetScriptDirectory()..'/FunLib/laning_lib')
 
 local Version      = require(GetScriptDirectory()..'/FunLib/version')
 local Localization = require(GetScriptDirectory()..'/FunLib/localization')
@@ -158,21 +160,30 @@ function GetBestLastHitCreep(hCreepList)
 end
 
 function GetBestDenyCreep(hCreepList)
+	-- SmartPlay: projectile-predicted denies (account for travel time), and
+	-- prefer denying the lowest creep the enemy could otherwise save.
+	local best, bestHP = nil, 99999
 	for _, creep in pairs(hCreepList)
 	do
 		if J.IsValid(creep)
-		and J.GetHP(creep) < 0.49
+		and J.GetHP(creep) < 0.5
 		and J.CanBeAttacked(creep)
-		and creep:GetHealth() <= attackDamage
 		then
-			return creep
+			local nDelay = J.GetAttackProDelayTime(bot, creep)
+			if J.WillKillTarget(creep, attackDamage, DAMAGE_TYPE_PHYSICAL, nDelay)
+			and creep:GetHealth() < bestHP
+			then
+				best, bestHP = creep, creep:GetHealth()
+			end
 		end
 	end
 
-	return nil
+	return best
 end
 
-if local_mode_laning_generic or (J.GetPosition(bot) == 1 and J.IsPosxHuman(5)) then
+if local_mode_laning_generic
+	or HumanLib.Enabled('Laning_All_Heroes')
+	or (J.GetPosition(bot) == 1 and J.IsPosxHuman(5)) then
 	function Think()
 		local hitCreep, moveToCreep = GetBestLastHitCreep(nEnemyCreeps)
 		if J.IsValid(hitCreep) then
@@ -194,6 +205,12 @@ if local_mode_laning_generic or (J.GetPosition(bot) == 1 and J.IsPosxHuman(5)) t
 		if J.IsValid(denyCreep) then
 			bot:SetTarget(denyCreep)
 			bot:Action_AttackUnit(denyCreep, true)
+			return
+		end
+
+		-- SmartPlay: creep-aggro dump + disciplined harass (never sacrifices farm)
+		if not local_mode_laning_generic
+		and Laning.ThinkHarass(bot, nEnemyCreeps, nInRangeEnemy, nAllyCreeps, botAssignedLane) then
 			return
 		end
 

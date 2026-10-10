@@ -131,6 +131,12 @@ local Localization = {
         say_defend_top = {"Defend top!", "They're pushing top!", "Help top lane!"},
         say_defend_mid = {"Defend mid!", "They're pushing mid!", "Help mid lane!"},
         say_defend_bot = {"Defend bot!", "They're pushing bot!", "Help bot lane!"},
+        say_miss_top = {"miss top!", "top missing!", "ss top!"},
+        say_miss_mid = {"miss mid!", "mid missing!", "ss mid!"},
+        say_miss_bot = {"miss bot!", "bot missing!", "ss bot!"},
+        say_smoke_gank = {"Let's smoke gank!", "Smoking up, let's go!", "Smoke gank, follow me!"},
+        say_trade_objectives = {"We can't hold, let's trade objectives!", "Too many over there, pushing elsewhere!", "Don't die defending, push another lane!"},
+        say_enemies_missing = {"Careful, they're all missing!", "Enemies missing, play safe!", "They're gone, watch out!"},
     },
     zh = {
         welcome_msgs = {
@@ -264,6 +270,12 @@ local Localization = {
         say_defend_top = {"防守上路！", "上路有人推！", "支援上路！"},
         say_defend_mid = {"防守中路！", "中路有人推！", "支援中路！"},
         say_defend_bot = {"防守下路！", "下路有人推！", "支援下路！"},
+        say_miss_top = {"上路miss！", "上路消失了！", "上路不见啦！"},
+        say_miss_mid = {"中路miss！", "中路消失了！", "中路不见啦！"},
+        say_miss_bot = {"下路miss！", "下路消失了！", "下路不见啦！"},
+        say_smoke_gank = {"开雾抓人！", "集合开雾，跟我来！", "开雾了，都跟上！"},
+        say_trade_objectives = {"守不住了，换路推！", "那边人太多，我们换路换资源！", "别去送，换一路推！"},
+        say_enemies_missing = {"小心，敌人全消失了！", "敌人都不见了，注意安全！", "人全没了，别乱走！"},
     },
     ru = {
         welcome_msgs = {
@@ -390,6 +402,12 @@ local Localization = {
         say_defend_top = {"Защищаем топ!", "Враги пушат топ!", "Помогите на топе!"},
         say_defend_mid = {"Защищаем мид!", "Враги пушат мид!", "Помогите на миде!"},
         say_defend_bot = {"Защищаем бот!", "Враги пушат бот!", "Помогите на боте!"},
+        say_miss_top = {"мисс топ!", "топ пропал!", "сс топ!"},
+        say_miss_mid = {"мисс мид!", "мид пропал!", "сс мид!"},
+        say_miss_bot = {"мисс бот!", "бот пропал!", "сс бот!"},
+        say_smoke_gank = {"Давайте в смоук!", "Курим, пошли!", "Смоук-ганг, за мной!"},
+        say_trade_objectives = {"Не отстоять, меняемся объектами!", "Их слишком много, пушим другую!", "Не умирайте, пушим другую линию!"},
+        say_enemies_missing = {"Осторожно, все пропали!", "Врагов не видно, играйте аккуратно!", "Они ушли, будьте начеку!"},
     },
     ja = {
         welcome_msgs = {
@@ -516,6 +534,12 @@ local Localization = {
         say_defend_top = {"トップ守れ！", "敵がトップ押してる！", "トップ助けて！"},
         say_defend_mid = {"ミッド守れ！", "敵がミッド押してる！", "ミッド助けて！"},
         say_defend_bot = {"ボット守れ！", "敵がボット押してる！", "ボット助けて！"},
+        say_miss_top = {"トップmiss！", "トップ消えた！", "トップいない！"},
+        say_miss_mid = {"ミッドmiss！", "ミッド消えた！", "ミッドいない！"},
+        say_miss_bot = {"ボトムmiss！", "ボトム消えた！", "ボトムいない！"},
+        say_smoke_gank = {"スモーク行こう！", "スモークついてきて！", "スモークガンク、集合！"},
+        say_trade_objectives = {"守れない、別レーンを押そう！", "人数が多い、別レーンにしよう！", "死なないで、別レーン押すぞ！"},
+        say_enemies_missing = {"注意、敵が全員消えた！", "敵が見えない、慎重に！", "全員いない、気をつけろ！"},
     },
 }
 

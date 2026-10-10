@@ -2013,3 +2013,20 @@ ConsiderHeroSpecificRoaming['npc_dota_hero_nevermore'] = function ()
 	end
 	return BOT_MODE_DESIRE_NONE
 end
+
+
+-- SmartPlay: join the planned smoke gank when one is active
+local HumanLibRoam = require( GetScriptDirectory()..'/FunLib/human_lib' )
+if HumanLibRoam.Enabled( 'Team_Coordination' ) then
+	local GankRoam = require( GetScriptDirectory()..'/FunLib/gank_lib' )
+	local _rawRoamDesire = GetDesire
+	GetDesire = function()
+		local d = _rawRoamDesire()
+		local botRoam = GetBot()
+		if botRoam ~= nil and botRoam:IsAlive() then
+			local plan = GankRoam.GetActiveSmokePlan( botRoam )
+			if plan ~= nil then return math.max( d, 0.85 ) end
+		end
+		return d
+	end
+end

@@ -38,6 +38,10 @@ local Localization = require( GetScriptDirectory()..'/FunLib/localization' )
 local HeroPositionMap = require( GetScriptDirectory()..'/FunLib/aba_hero_pos_weights' )
 local heroUnitNames = require( GetScriptDirectory()..'/FretBots/HeroNames')
 local Customize = require(GetScriptDirectory()..'/FunLib/custom_loader')
+local HumanLib = require( GetScriptDirectory()..'/FunLib/human_lib' )
+local okMetaWeights, MetaWeights = pcall(require, GetScriptDirectory()..'/FunLib/meta_weights')
+if not okMetaWeights or type(MetaWeights) ~= 'table' or MetaWeights.winrate == nil
+then MetaWeights = nil end
 local okMatchupLib, HeroMatchups = pcall(require, GetScriptDirectory()..'/FunLib/aba_matchups')
 if not okMatchupLib then HeroMatchups = nil end
 HeroPositionMap = HeroPositionMap.GetHeroPositions()
@@ -643,6 +647,15 @@ local function ScoreCandidatesForTeam(team, rolePool, enemyNames, posIndex)
 			-- 4. Weak hero penalty
 			if Utils.HasValue(WeakHeroes, cand) then
 				score = score * weakPenalty
+			end
+
+			-- 5. Meta win-rate bias (baked offline for ~Archon bracket; +/-10%)
+			if HumanLib.Enabled('Meta_BP') and MetaWeights ~= nil then
+				local shortName = string.gsub(cand, 'npc_dota_hero_', '')
+				local wr = MetaWeights.winrate[shortName]
+				if wr ~= nil then
+					score = score * (1 + math.max(-0.5, math.min(0.5, (wr - 0.5) * 2)) * 0.1)
+				end
 			end
 
 			table.insert(list, { name = cand, score = score })

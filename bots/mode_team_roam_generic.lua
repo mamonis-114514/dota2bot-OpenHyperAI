@@ -1709,6 +1709,22 @@ function J.FindLeastExpensiveItemSlot()
 	return idx
 end
 
+-- SmartPlay: join the planned smoke gank when one is active
+local HumanLibTRoam = require( GetScriptDirectory()..'/FunLib/human_lib' )
+if HumanLibTRoam.Enabled( 'Team_Coordination' ) then
+	local GankTRoam = require( GetScriptDirectory()..'/FunLib/gank_lib' )
+	local _rawTRoamDesire = GetDesire
+	GetDesire = function()
+		local d = _rawTRoamDesire()
+		local botTRoam = GetBot()
+		if botTRoam ~= nil and botTRoam:IsAlive() then
+			local plan = GankTRoam.GetActiveSmokePlan( botTRoam )
+			if plan ~= nil then return math.max( d, 0.85 ) end
+		end
+		return d
+	end
+end
+
 X.GetDesire = GetDesire
 X.Think = Think
 

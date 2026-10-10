@@ -26,7 +26,7 @@ Customize.Enable = true
 -- Set the localization code to make bots speak the specific language when possible (not guaranteed to 100% localized). 
 -- Currently supprot: "en" for "English", "zh" for "中文", "ru" for Russian, "ja" for Japanese
 -- https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
-Customize.Localization = "en"
+Customize.Localization = "zh"
 
 -- To ban some heroes for bots - Set the heroes you DO NOT want the bots to pick. Use hero internal names.
 -- Hero name ref: https://github.com/forest0xia/dota2bot-OpenHyperAI/discussions/71
@@ -95,10 +95,52 @@ Customize.Dire_Names = {
     'Random',
 }
 
--- The desire level that the bots will group up and push the same lane. 
+-- The desire level that the bots will group up and push the same lane.
 -- 1 is mild meaning bots will group up only when convenient; 3 is bots will almost always try to push together.
--- Group pushing may increase the difficulty but can reduce the game experience. 
+-- Group pushing may increase the difficulty but can reduce the game experience.
 Customize.Force_Group_Push_Level = 1
+
+--[[
+SmartPlay: the enhanced game-sense layer (laning micro / team coordination / draft adaptation).
+Each subsystem can be toggled independently; defaults are tuned for ~Archon (3000 MMR) bots.
+These are decision-layer improvements only - bots never get stat bonuses from these.
+--]]
+Customize.SmartPlay = {
+    -- Master switch for everything below.
+    Enable = true,
+
+    -- Phase 1: laning micro - creep aggro management, ranged harass with
+    -- reaction delay, smarter denies, lane equilibrium awareness.
+    Laning_Micro = true,
+
+    -- Phase 1: camp stacking at :53 and lane pulling for pos 4/5 bots.
+    -- Bots yield camps to nearby human supports.
+    Pull_And_Stack = true,
+
+    -- Phase 2: planned smoke ganks, TP counter-dive rescue, "trade objectives"
+    -- when a defense is unwinnable, enemy-missing warnings.
+    Team_Coordination = true,
+
+    -- Phase 3: adjust item builds against the enemy draft (max 3 changes:
+    -- Spirit Vessel vs healing, cleave vs illusions, MKB vs evasion,
+    -- BKB/Orchid timings, etc).
+    Draft_Adaptive_Items = true,
+
+    -- Gently bias hero picking weights by current-patch meta win rates
+    -- (baked offline from OpenDota/STRATZ, +/-10% at most).
+    Meta_BP = true,
+
+    -- Human-like imperfections on the NEW aggressive behaviors only: reaction
+    -- delays (0.3-1.2s), occasional skipped harass windows, aim jitter.
+    -- Existing dodge/save logic is never delayed.
+    Humanize = true,
+
+    -- EXPERIMENTAL: run the scripted laning Think (aggro dump / harass /
+    -- projectile-predicted denies) for ALL heroes instead of only the
+    -- Valve-buggy ones. Default off - the engine's built-in laning stays in
+    -- charge for normal heroes. Flip to true to compare in testing.
+    Laning_All_Heroes = false,
+}
 
 -- The Enhanced Fretbots mode settings:
 -- For more about Fretbots mode: https://github.com/forest0xia/dota2bot-OpenHyperAI/discussions/68

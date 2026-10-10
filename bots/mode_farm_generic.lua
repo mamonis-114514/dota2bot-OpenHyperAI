@@ -1208,3 +1208,21 @@ function X.IsThereT3Detroyed()
 	end	
 	return false;
 end
+
+-- SmartPlay: camp stacking / lane pulling (see FunLib/camp_lib.lua)
+local HumanLibSP = require( GetScriptDirectory()..'/FunLib/human_lib' )
+if HumanLibSP.Enabled( 'Pull_And_Stack' ) then
+	local Camp = require( GetScriptDirectory()..'/FunLib/camp_lib' )
+	local _rawFarmDesire = GetDesire
+	GetDesire = function()
+		local d = _rawFarmDesire()
+		local campBonus = Camp.DesireBonus( bot )
+		if campBonus > d then return campBonus end
+		return d
+	end
+	local _rawFarmThink = Think
+	Think = function()
+		if Camp.FarmIntercept( bot ) then return end
+		_rawFarmThink()
+	end
+end
